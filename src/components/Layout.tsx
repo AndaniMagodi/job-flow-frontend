@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 const navItems = [
   { to: "/", label: "Dashboard" },
   { to: "/applications", label: "Applications" },
+  { to: "/applications/new", label: "Add Application" },
 ];
 
 export default function Layout() {

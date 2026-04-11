@@ -64,6 +64,7 @@ export default function QuickAddApplication({
       company: trimmedCompany,
       role: trimmedRole,
       link: jobUrl.trim() || undefined,
+      
     });
     resetFields();
   }
