@@ -5,7 +5,6 @@ import { updateApplicationStatus, setFollowUpDate } from "../api/application";
 import { getApplicationActivities } from "../api/activities";
 import ActivityTimeline from "./ActivityTimeline";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 type Props = {
   application: JobApplication;
