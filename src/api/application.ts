@@ -1,50 +1,43 @@
+import { api } from "../lib/api";
 import type { JobApplication } from "../types/application";
-import { loadApplications, saveApplications } from "../lib/storage";
-
-export async function getApplications(): Promise<JobApplication[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const applications = loadApplications();
-      resolve(applications);
-    }, 300);
-  });
-}
 
 export type CreateApplicationInput = {
   company: string;
   role: string;
   status?: JobApplication["status"];
-  dateApplied?: string;
+  date_applied?: string;
   link?: string;
   notes?: string;
 };
 
+export async function getApplications(): Promise<JobApplication[]> {
+  return api.get<JobApplication[]>("/applications");
+}
+
 export async function createApplication(
-  input: CreateApplicationInput,
+  input: CreateApplicationInput
 ): Promise<JobApplication> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const existingApplications = loadApplications();
-      const highestExistingId = existingApplications.reduce(
-        (maxId, application) => Math.max(maxId, application.id),
-        0,
-      );
-      const nextId = highestExistingId + 1;
+  return api.post<JobApplication>("/applications", input);
+}
 
-      const newApplication: JobApplication = {
-        id: nextId,
-        company: input.company.trim(),
-        role: input.role.trim(),
-        status: input.status ?? "Applied",
-        dateApplied: input.dateApplied ?? new Date().toISOString().slice(0, 10),
-        link: input.link?.trim() || undefined,
-        notes: input.notes?.trim() || undefined,
-      };
+export async function updateApplicationStatus(
+  id: number,
+  status: JobApplication["status"]
+): Promise<JobApplication> {
+  return api.patch<JobApplication>(`/applications/${id}/status`, { status });
+}
 
-      const updatedApplications = [newApplication, ...existingApplications];
-      saveApplications(updatedApplications);
+export async function deleteApplication(id: number): Promise<void> {
+  return api.delete(`/applications/${id}`);
+}
 
-      resolve(newApplication);
-    }, 200);
-  });
+export async function setFollowUpDate(
+  id: number,
+  follow_up_date: string
+): Promise<JobApplication> {
+  return api.patch<JobApplication>(`/applications/${id}/follow-up`, { follow_up_date });
+}
+
+export async function getDueApplications(): Promise<JobApplication[]> {
+  return api.get<JobApplication[]>("/applications/due");
 }
