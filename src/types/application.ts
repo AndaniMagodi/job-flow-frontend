@@ -9,7 +9,7 @@ export type JobApplication = {
   company: string;
   role: string;
   status: ApplicationStatus;
-  dateApplied: string;
+  date_applied: string;
   follow_up_date?: string | null;
   link?: string;
   notes?: string;

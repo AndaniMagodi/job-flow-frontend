@@ -20,9 +20,79 @@ const STATUS_STYLES: Record<ApplicationStatus, string> = {
   Rejected:  "bg-red-50 text-red-700 hover:bg-red-50",
 };
 
+const SOURCE_LOGOS: Record<string, string> = {
+  linkedin:   "https://www.google.com/s2/favicons?domain=linkedin.com&sz=32",
+  indeed:     "https://www.google.com/s2/favicons?domain=indeed.com&sz=32",
+  greenhouse: "https://www.google.com/s2/favicons?domain=greenhouse.io&sz=32",
+  lever:      "https://www.google.com/s2/favicons?domain=lever.co&sz=32",
+  workday:    "https://www.google.com/s2/favicons?domain=workday.com&sz=32",
+  glassdoor:  "https://www.google.com/s2/favicons?domain=glassdoor.com&sz=32",
+};
+
 function getInitials(company: string) {
-  return company.slice(0, 2).toUpperCase();
+   return company.slice(0, 2).toUpperCase();
+ }
+
+function getLogoUrl(company: string) {
+  const domain = company
+    .toLowerCase()
+    .trim()
+    .replace(/\s+(inc|ltd|llc|pty|co)\.?$/i, "")
+    .replace(/\s+/g, "")
+    + ".com";
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 }
+
+function detectSource(link?: string): string | null {
+  if (!link) return null;
+  const url = link.toLowerCase();
+  for (const key of Object.keys(SOURCE_LOGOS)) {
+    if (url.includes(key)) return key;
+  }
+  return null;
+}
+
+function CompanyAvatar({
+  company,
+  status,
+  link,
+}: {
+  company: string;
+  status: ApplicationStatus;
+  link?: string;
+}) {
+  const [imgError, setImgError] = useState(false);
+  const source = detectSource(link);
+  const sourceLogoUrl = source ? SOURCE_LOGOS[source] : null;
+
+  return (
+    <div className="relative flex-shrink-0">
+      {!imgError ? (
+        <img
+          src={getLogoUrl(company)}
+          alt={company}
+          onError={() => setImgError(true)}
+          className="w-9 h-9 rounded-lg object-contain bg-white border border-slate-100 p-0.5"
+        />
+      ) : (
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold ${AVATAR_COLORS[status]}`}>
+          {getInitials(company)}
+        </div>
+      )}
+
+      {/* Source badge — bottom right corner */}
+      {sourceLogoUrl && (
+        <img
+          src={sourceLogoUrl}
+          alt={source!}
+          className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white border border-white object-contain"
+        />
+      )}
+    </div>
+  );
+}
+
+
 
 const AVATAR_COLORS: Record<ApplicationStatus, string> = {
   Applied:   "bg-blue-50 text-blue-600",
@@ -73,7 +143,12 @@ export default function ApplicationCard({ application, onStatusChange, onDelete 
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${AVATAR_COLORS[status]}`}>
-              {getInitials(application.company)}
+            <CompanyAvatar
+                company={application.company}
+                status={status}
+                link={application.link}
+              />
+
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-900">{application.role}</p>
@@ -103,7 +178,7 @@ export default function ApplicationCard({ application, onStatusChange, onDelete 
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-400">
-          <span>Applied {application.dateApplied}</span>
+          <span>Applied {application.date_applied}</span>
           {application.link && (
             <a href={application.link} target="_blank" rel="noreferrer"
               className="text-indigo-500 hover:text-indigo-700 transition-colors">
