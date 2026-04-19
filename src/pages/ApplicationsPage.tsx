@@ -75,11 +75,21 @@ export default function ApplicationsPage() {
 
       {isLoading && <p>Loading applications...</p>}
       {isError && <p className="text-sm text-red-600">Something went wrong while loading applications.</p>}
+
+      {!isLoading && !isError && data?.length === 0 && (
+        <div className="rounded-xl border bg-white p-10 text-center shadow-sm">
+          <p className="text-lg font-semibold text-slate-700">No applications yet</p>
+          <p className="text-sm text-slate-400 mt-1">
+            Add your first application using the form above.
+          </p>
+        </div>
+      )}
       {createApplicationMutation.isError && (
         <p className="text-sm text-red-600">
           Could not save your application. Please try again.
         </p>
       )}
+
 
       <div className="grid gap-4">
         {data?.map((application) => (

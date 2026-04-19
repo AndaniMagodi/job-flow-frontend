@@ -30,3 +30,14 @@ export async function updateApplicationStatus(
 export async function deleteApplication(id: number): Promise<void> {
   return api.delete(`/applications/${id}`);
 }
+
+export async function setFollowUpDate(
+  id: number,
+  follow_up_date: string
+): Promise<JobApplication> {
+  return api.patch<JobApplication>(`/applications/${id}/follow-up`, { follow_up_date });
+}
+
+export async function getDueApplications(): Promise<JobApplication[]> {
+  return api.get<JobApplication[]>("/applications/due");
+}
