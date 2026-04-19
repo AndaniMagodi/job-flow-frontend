@@ -1,73 +1,113 @@
-# React + TypeScript + Vite
+# JobFlow — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Track every job application. Miss nothing.
 
-Currently, two official plugins are available:
+JobFlow is a full-stack job application tracker built for developers actively job hunting. It gives you a clean dashboard to monitor your pipeline, track statuses, get reminded about follow-ups, and see your response rate at a glance.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Live Demo:** [jobflow.vercel.app](https://jobflow.vercel.app) <!-- replace with your URL -->  
+**Backend Repo:** [job-flow-backend](https://github.com/AndaniMagodi/job-flow-backend)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Screenshots
 
-## Expanding the ESLint configuration
+### Dashboard
+![Dashboard](./screenshots/dashboard.png)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Applications
+![Applications](./screenshots/applications.png)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Login
+![Login](./screenshots/login.png)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Features
+
+- **Auth** — Register and sign in with JWT-based authentication
+- **Dashboard** — Summary cards showing total applications, interviews, offers, and response rate
+- **Action Centre** — Highlights overdue follow-ups so nothing slips through
+- **Recent Activity** — Timeline of your latest application events
+- **Applications List** — Full list of tracked applications with status badges
+- **Quick Add** — Add a new application in seconds with auto-filled status and date
+- **Status Tracking** — Applied → Interview → Offer → Rejected
+- **Notes** — Add notes to each application
+- **Job Link** — Save the original job posting URL per application
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | React + TypeScript |
+| State Management | React Context |
+| Server State / Data Fetching | TanStack Query (React Query) |
+| Routing | React Router v7 |
+| HTTP Client | Native Fetch API (custom wrapper) |
+| Build Tool | Vite |
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- The backend running locally or deployed (see [backend repo](https://github.com/AndaniMagodi/job-flow-backend))
+
+### Installation
+
+```bash
+git clone https://github.com/AndaniMagodi/job-flow-frontend.git
+cd job-flow-frontend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Environment Variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env` file in the root:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_API_URL=http://localhost:8000
 ```
+
+### Run Locally
+
+```bash
+npm run dev
+```
+
+App runs at `http://localhost:5173`
+
+---
+
+## Project Structure
+
+```
+src/
+├── api/              # API call functions
+├── assets/           # Static assets
+├── components/       # Reusable UI components
+├── context/          # React context providers
+├── data/             # Static/seed data
+├── lib/              # Utility functions and helpers
+├── pages/            # Route-level page components
+├── types/            # TypeScript interfaces
+├── App.tsx           # Root component
+└── main.tsx          # Entry point
+```
+
+---
+
+## Deployment
+
+Deployed on **Vercel**. Connect your GitHub repo and set the `VITE_API_URL` environment variable to your backend URL.
+
+---
+
+## Roadmap
+
+- [ ] Kanban board view
+- [ ] Email reminders for follow-ups
+- [ ] Interview preparation notes
+- [ ] CSV export of all applications
