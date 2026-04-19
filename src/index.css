@@ -140,4 +140,9 @@ body {
   html {
     @apply font-sans;
   }
+  :root {
+    --nav-bg: #0f0f0f;
+    --nav-text: #888;
+    --nav-active: #ffffff;
+  }
 }
