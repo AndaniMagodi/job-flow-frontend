@@ -5,6 +5,7 @@ import ActivityTimeline from "../components/ActivityTimeline";
 import ActionCentre from "../components/ActionCenter";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ExtensionConnect from "@/components/ExtensionConnect";
 
 export default function DashboardPage() {
   const { data: activities, isLoading: activitiesLoading } = useQuery({
@@ -82,6 +83,9 @@ export default function DashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      <ExtensionConnect />
     </section>
+    
   );
 }

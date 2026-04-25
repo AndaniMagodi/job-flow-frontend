@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
 console.log("API URL:", BASE_URL);
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
