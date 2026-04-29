@@ -5,12 +5,7 @@ import { getAnalyticsSummary } from "../api/analytics";
 import ActivityTimeline from "../components/ActivityTimeline";
 import ActionCentre from "../components/ActionCenter";
 
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
-}
+
 
 function todayStr() {
   return new Date().toLocaleDateString("en-ZA", {
