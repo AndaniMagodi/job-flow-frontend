@@ -1,7 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { getDueApplications } from "../api/application";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 function getDueBadge(dateStr: string) {
   const today = new Date();
@@ -10,53 +8,54 @@ function getDueBadge(dateStr: string) {
   due.setHours(0, 0, 0, 0);
   const diff = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diff < 0)   return { label: `${Math.abs(diff)}d overdue`, className: "bg-red-50 text-red-700 hover:bg-red-50" };
-  if (diff === 0) return { label: "Due today",                   className: "bg-amber-50 text-amber-700 hover:bg-amber-50" };
-  return           { label: `Due in ${diff}d`,                   className: "bg-blue-50 text-blue-700 hover:bg-blue-50" };
+  if (diff < 0)   return { label: `${Math.abs(diff)}d overdue`, bg: "#2d1515", color: "#f87171" };
+  if (diff === 0) return { label: "Due today",                   bg: "#2d2010", color: "#fbbf24" };
+  return           { label: `Due in ${diff}d`,                   bg: "#0f1e3d", color: "#60a5fa" };
 }
 
-export default function ActionCentre() {
+export default function ActionCentre({ compact = false }: { compact?: boolean }) {
   const { data: due, isLoading } = useQuery({
     queryKey: ["applications-due"],
     queryFn: getDueApplications,
   });
 
   if (isLoading) return null;
-  if (!due || due.length === 0) return (
-    <Card className="shadow-none">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold text-slate-700">Action centre</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-slate-400">No follow-ups due. You're all caught up!</p>
-      </CardContent>
-    </Card>
-  );
+
+  if (!due || due.length === 0) {
+    return (
+      <p style={{ fontSize: 12, color: "#555" }}>
+        No follow-ups due. You're all caught up!
+      </p>
+    );
+  }
+
+  const items = compact ? due.slice(0, 3) : due;
 
   return (
-    <Card className="shadow-none">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold text-slate-700">
-          Action centre
-          <span className="ml-2 text-xs font-normal text-slate-400">
-            {due.length} need{due.length === 1 ? "s" : ""} attention
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {due.map((app) => {
-          const badge = getDueBadge(app.follow_up_date!);
-          return (
-            <div key={app.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-              <div>
-                <p className="text-sm font-medium text-slate-800">{app.role}</p>
-                <p className="text-xs text-slate-400">{app.company}</p>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {items.map((app) => {
+        const badge = getDueBadge(app.follow_up_date!);
+        const initials = app.company.slice(0, 2).toUpperCase();
+        return (
+          <div key={app.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#222", borderRadius: 10, padding: "10px 12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "#1e1b4b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#818cf8", flexShrink: 0 }}>
+                {initials}
               </div>
-              <Badge className={badge.className}>{badge.label}</Badge>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 500, color: "#ddd" }}>{app.role}</div>
+                <div style={{ fontSize: 11, color: "#555", marginTop: 1 }}>{app.company}</div>
+              </div>
             </div>
-          );
-        })}
-      </CardContent>
-    </Card>
+            <span style={{ fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 20, background: badge.bg, color: badge.color }}>
+              {badge.label}
+            </span>
+          </div>
+        );
+      })}
+      {compact && due.length > 3 && (
+        <p style={{ fontSize: 11, color: "#555", textAlign: "center" }}>+{due.length - 3} more</p>
+      )}
+    </div>
   );
 }

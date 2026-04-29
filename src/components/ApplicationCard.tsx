@@ -4,7 +4,6 @@ import type { ApplicationStatus, JobApplication } from "../types/application";
 import { updateApplicationStatus, setFollowUpDate } from "../api/application";
 import { getApplicationActivities } from "../api/activities";
 import ActivityTimeline from "./ActivityTimeline";
-import { Card, CardContent } from "@/components/ui/card";
 
 type Props = {
   application: JobApplication;
@@ -12,12 +11,26 @@ type Props = {
   onDelete?: (id: number) => void;
 };
 
-const STATUS_STYLES: Record<ApplicationStatus, string> = {
-  Applied:   "bg-blue-50 text-blue-700 hover:bg-blue-50",
-  Interview: "bg-amber-50 text-amber-700 hover:bg-amber-50",
-  Offer:     "bg-emerald-50 text-emerald-700 hover:bg-emerald-50",
-  Rejected:  "bg-red-50 text-red-700 hover:bg-red-50",
+const STATUS_STYLES: Record<ApplicationStatus, { bg: string; color: string }> = {
+  Applied:   { bg: "#1e1b4b", color: "#818cf8" },
+  Interview: { bg: "#1c1a0e", color: "#fbbf24" },
+  Offer:     { bg: "#0a1f14", color: "#34d399" },
+  Rejected:  { bg: "#1f1010", color: "#f87171" },
 };
+
+const AVATAR_COLORS: Record<ApplicationStatus, { bg: string; color: string }> = {
+  Applied:   { bg: "#1e1b4b", color: "#818cf8" },
+  Interview: { bg: "#1c1a0e", color: "#fbbf24" },
+  Offer:     { bg: "#0a1f14", color: "#34d399" },
+  Rejected:  { bg: "#1f1010", color: "#f87171" },
+};
+
+function getLogoUrl(company: string) {
+  const domain = company.toLowerCase().trim()
+    .replace(/\s+(inc|ltd|llc|pty|co)\.?$/i, "")
+    .replace(/\s+/g, "") + ".com";
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+}
 
 const SOURCE_LOGOS: Record<string, string> = {
   linkedin:   "https://www.google.com/s2/favicons?domain=linkedin.com&sz=32",
@@ -25,22 +38,8 @@ const SOURCE_LOGOS: Record<string, string> = {
   greenhouse: "https://www.google.com/s2/favicons?domain=greenhouse.io&sz=32",
   lever:      "https://www.google.com/s2/favicons?domain=lever.co&sz=32",
   workday:    "https://www.google.com/s2/favicons?domain=workday.com&sz=32",
-  glassdoor:  "https://www.google.com/s2/favicons?domain=glassdoor.com&sz=32",
+  pnet:       "https://www.google.com/s2/favicons?domain=pnet.co.za&sz=32",
 };
-
-function getInitials(company: string) {
-   return company.slice(0, 2).toUpperCase();
- }
-
-function getLogoUrl(company: string) {
-  const domain = company
-    .toLowerCase()
-    .trim()
-    .replace(/\s+(inc|ltd|llc|pty|co)\.?$/i, "")
-    .replace(/\s+/g, "")
-    + ".com";
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-}
 
 function detectSource(link?: string): string | null {
   if (!link) return null;
@@ -51,54 +50,38 @@ function detectSource(link?: string): string | null {
   return null;
 }
 
-function CompanyAvatar({
-  company,
-  status,
-  link,
-}: {
-  company: string;
-  status: ApplicationStatus;
-  link?: string;
+function CompanyAvatar({ company, status, link }: {
+  company: string; status: ApplicationStatus; link?: string;
 }) {
   const [imgError, setImgError] = useState(false);
   const source = detectSource(link);
   const sourceLogoUrl = source ? SOURCE_LOGOS[source] : null;
+  const avatarStyle = AVATAR_COLORS[status];
 
   return (
-    <div className="relative flex-shrink-0">
+    <div style={{ position: "relative", flexShrink: 0 }}>
       {!imgError ? (
         <img
           src={getLogoUrl(company)}
           alt={company}
           onError={() => setImgError(true)}
-          className="w-9 h-9 rounded-lg object-contain bg-white border border-slate-100 p-0.5"
+          style={{ width: 36, height: 36, borderRadius: 8, objectFit: "contain", background: "#222", border: "1px solid #2a2a2a", padding: 2 }}
         />
       ) : (
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold ${AVATAR_COLORS[status]}`}>
-          {getInitials(company)}
+        <div style={{ width: 36, height: 36, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, background: avatarStyle.bg, color: avatarStyle.color }}>
+          {company.slice(0, 2).toUpperCase()}
         </div>
       )}
-
-      {/* Source badge — bottom right corner */}
       {sourceLogoUrl && (
         <img
           src={sourceLogoUrl}
           alt={source!}
-          className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white border border-white object-contain"
+          style={{ position: "absolute", bottom: -3, right: -3, width: 14, height: 14, borderRadius: "50%", background: "#111", border: "1px solid #111", objectFit: "contain" }}
         />
       )}
     </div>
   );
 }
-
-
-
-const AVATAR_COLORS: Record<ApplicationStatus, string> = {
-  Applied:   "bg-blue-50 text-blue-600",
-  Interview: "bg-amber-50 text-amber-600",
-  Offer:     "bg-emerald-50 text-emerald-600",
-  Rejected:  "bg-slate-100 text-slate-400",
-};
 
 export default function ApplicationCard({ application, onStatusChange, onDelete }: Props) {
   const [status, setStatus] = useState<ApplicationStatus>(application.status);
@@ -132,87 +115,89 @@ export default function ApplicationCard({ application, onStatusChange, onDelete 
     try {
       await setFollowUpDate(application.id, newDate);
     } catch (err) {
-      console.error("Failed to set follow-up date", err);
+      console.error("Failed to set follow-up", err);
     }
   }
 
+  const statusStyle = STATUS_STYLES[status];
+
   return (
-    <Card className="shadow-none hover:border-slate-300 transition-colors">
-      <CardContent className="pt-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${AVATAR_COLORS[status]}`}>
-            <CompanyAvatar
-                company={application.company}
-                status={status}
-                link={application.link}
-              />
-
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">{application.role}</p>
-              <p className="text-xs text-slate-400">{application.company}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <select
-              value={status}
-              onChange={handleStatusChange}
-              disabled={updating}
-              className={`rounded-full px-3 py-1 text-xs font-medium border-0 cursor-pointer outline-none ${STATUS_STYLES[status]}`}
-            >
-              <option value="Applied">Applied</option>
-              <option value="Interview">Interview</option>
-              <option value="Offer">Offer</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-            <button
-              onClick={() => onDelete?.(application.id)}
-              className="text-xs text-slate-300 hover:text-red-400 transition-colors"
-            >
-              Delete
-            </button>
+    <div style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: 16, padding: "14px 16px", transition: "border-color 0.15s" }}
+      onMouseEnter={e => (e.currentTarget.style.borderColor = "#333")}
+      onMouseLeave={e => (e.currentTarget.style.borderColor = "#222")}
+    >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+          <CompanyAvatar company={application.company} status={status} link={application.link} />
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#ddd", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {application.role}
+            </p>
+            <p style={{ fontSize: 11, color: "#555", margin: 0, marginTop: 2 }}>{application.company}</p>
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-400">
-          <span>Applied {application.date_applied}</span>
-          {application.link && (
-            <a href={application.link} target="_blank" rel="noreferrer"
-              className="text-indigo-500 hover:text-indigo-700 transition-colors">
-              View posting
-            </a>
-          )}
-          <div className="flex items-center gap-1">
-            <span>Follow-up:</span>
-            <input
-              type="date"
-              value={followUp}
-              onChange={handleFollowUpChange}
-              className="rounded border-0 bg-transparent text-xs text-slate-500 outline-none cursor-pointer"
-            />
-          </div>
-        </div>
-
-        {application.notes && (
-          <p className="mt-2 text-xs text-slate-400 italic">{application.notes}</p>
-        )}
-
-        <div className="mt-3 border-t border-slate-50 pt-3">
-          <button
-            onClick={() => setShowTimeline(!showTimeline)}
-            className="text-xs text-slate-300 hover:text-slate-500 transition-colors"
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <select
+            value={status}
+            onChange={handleStatusChange}
+            disabled={updating}
+            style={{ background: statusStyle.bg, color: statusStyle.color, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, border: "none", cursor: "pointer", outline: "none" }}
           >
-            {showTimeline ? "Hide history" : "Show history"}
+            <option value="Applied">Applied</option>
+            <option value="Interview">Interview</option>
+            <option value="Offer">Offer</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+          <button
+            onClick={() => onDelete?.(application.id)}
+            style={{ fontSize: 11, color: "#333", background: "none", border: "none", cursor: "pointer", transition: "color 0.15s" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#f87171")}
+            onMouseLeave={e => (e.currentTarget.style.color = "#333")}
+          >
+            Delete
           </button>
-          {showTimeline && activities && (
-            <div className="mt-3">
-              <ActivityTimeline activities={activities} />
-            </div>
-          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, fontSize: 11, color: "#555" }}>
+        <span>Applied {application.date_applied}</span>
+        {application.link && (
+          <a href={application.link} target="_blank" rel="noreferrer"
+            style={{ color: "#6366f1", textDecoration: "none" }}>
+            View posting ↗
+          </a>
+        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span>Follow-up:</span>
+          <input
+            type="date"
+            value={followUp}
+            onChange={handleFollowUpChange}
+            style={{ background: "transparent", fontSize: 11, color: "#666", border: "none", outline: "none", cursor: "pointer" }}
+          />
+        </div>
+      </div>
+
+      {application.notes && (
+        <p style={{ marginTop: 6, fontSize: 11, color: "#444", fontStyle: "italic" }}>{application.notes}</p>
+      )}
+
+      <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #222" }}>
+        <button
+          onClick={() => setShowTimeline(!showTimeline)}
+          style={{ fontSize: 11, color: "#333", background: "none", border: "none", cursor: "pointer", transition: "color 0.15s" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "#888")}
+          onMouseLeave={e => (e.currentTarget.style.color = "#333")}
+        >
+          {showTimeline ? "Hide history" : "Show history"}
+        </button>
+        {showTimeline && activities && (
+          <div style={{ marginTop: 12 }}>
+            <ActivityTimeline activities={activities} />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

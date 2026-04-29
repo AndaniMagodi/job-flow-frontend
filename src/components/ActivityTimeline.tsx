@@ -1,44 +1,53 @@
 import type { Activity } from "../api/activities";
 
 const EVENT_STYLES: Record<string, { color: string; label: string }> = {
-  created:        { color: "bg-indigo-500", label: "Applied" },
-  status_changed: { color: "bg-amber-500",  label: "Status changed" },
-  note_added:     { color: "bg-slate-400",  label: "Note added" },
-  follow_up_set:  { color: "bg-emerald-500", label: "Follow-up set" },
+  created:        { color: "#6366f1", label: "Applied" },
+  status_changed: { color: "#f59e0b", label: "Status changed" },
+  note_added:     { color: "#444",    label: "Note added" },
+  follow_up_set:  { color: "#10b981", label: "Follow-up set" },
 };
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-ZA", {
-    day: "numeric", month: "short", year: "numeric",
-  });
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(mins / 60);
+  const days = Math.floor(hours / 24);
+  if (days > 0) return `${days}d ago`;
+  if (hours > 0) return `${hours}h ago`;
+  if (mins > 0) return `${mins}m ago`;
+  return "Just now";
 }
 
 export default function ActivityTimeline({ activities }: { activities: Activity[] }) {
   if (activities.length === 0) {
-    return <p className="text-sm text-slate-400">No activity yet.</p>;
+    return <p style={{ fontSize: 12, color: "#555" }}>No activity yet.</p>;
   }
 
   return (
-    <ol className="relative border-l border-slate-100 space-y-4 ml-2">
-      {activities.map((activity) => {
-        const style = EVENT_STYLES[activity.event] ?? {
-          color: "bg-slate-400",
-          label: activity.event,
-        };
+    <div>
+      {activities.map((activity, i) => {
+        const style = EVENT_STYLES[activity.event] ?? { color: "#444", label: activity.event };
+        const isLast = i === activities.length - 1;
         return (
-          <li key={activity.id} className="ml-4">
-            <span className={`absolute -left-1.5 mt-1.5 h-2.5 w-2.5 rounded-full ${style.color}`} />
-            <div className="flex items-center gap-2">
-              <p className="text-xs font-medium text-slate-600">{style.label}</p>
-              <span className="text-xs text-slate-300">·</span>
-              <p className="text-xs text-slate-400">{formatDate(activity.created_at)}</p>
+          <div key={activity.id} style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ width: 7, height: 7, borderRadius: "50%", background: style.color, marginTop: 4, flexShrink: 0 }} />
+              {!isLast && <div style={{ width: 1, flex: 1, background: "#2a2a2a", margin: "4px 0" }} />}
             </div>
-            {activity.detail && (
-              <p className="text-xs text-slate-500 mt-0.5">{activity.detail}</p>
-            )}
-          </li>
+            <div style={{ flex: 1, display: "flex", justifyContent: "space-between", paddingBottom: isLast ? 0 : 12 }}>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 500, color: "#ccc" }}>{style.label}</div>
+                {activity.detail && (
+                  <div style={{ fontSize: 11, color: "#555", marginTop: 2 }}>{activity.detail}</div>
+                )}
+              </div>
+              <div style={{ fontSize: 11, color: "#444", whiteSpace: "nowrap", marginLeft: 12, marginTop: 2 }}>
+                {timeAgo(activity.created_at)}
+              </div>
+            </div>
+          </div>
         );
       })}
-    </ol>
+    </div>
   );
 }

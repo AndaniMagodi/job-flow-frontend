@@ -10,7 +10,7 @@ import type { ApplicationStatus } from "../types/application";
 
 function uniqueSuggestions(values: string[] = []): string[] {
   return Array.from(
-    new Set(values.map((value) => value.trim()).filter(Boolean)),
+    new Set(values.map((value) => value.trim()).filter(Boolean))
   ).slice(0, 12);
 }
 
@@ -45,18 +45,33 @@ export default function ApplicationsPage() {
   }
 
   const companySuggestions = uniqueSuggestions(
-    data?.map((application) => application.company),
+    data?.map((application) => application.company)
   );
   const roleSuggestions = uniqueSuggestions(
-    data?.map((application) => application.role),
+    data?.map((application) => application.role)
   );
 
   return (
-    <section className="space-y-5">
-      <div>
-        <h2 className="text-2xl font-bold">Applications</h2>
-        <p className="text-slate-600">
-          Track all your submitted job applications in one place.
+    <section
+      style={{
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif",
+      }}
+    >
+      <div style={{ marginBottom: 20 }}>
+        <h2
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            color: "#fff",
+            letterSpacing: "-0.5px",
+            margin: 0,
+          }}
+        >
+          Applications
+        </h2>
+        <p style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
+          Every application you've logged, in one place.
         </p>
       </div>
 
@@ -70,15 +85,20 @@ export default function ApplicationsPage() {
             date_applied: new Date().toISOString().slice(0, 10),
           });
         }}
-        
       />
 
       {isLoading && <p>Loading applications...</p>}
-      {isError && <p className="text-sm text-red-600">Something went wrong while loading applications.</p>}
+      {isError && (
+        <p className="text-sm text-red-600">
+          Something went wrong while loading applications.
+        </p>
+      )}
 
       {!isLoading && !isError && data?.length === 0 && (
         <div className="rounded-xl border bg-white p-10 text-center shadow-sm">
-          <p className="text-lg font-semibold text-slate-700">No applications yet</p>
+          <p className="text-lg font-semibold text-slate-700">
+            No applications yet
+          </p>
           <p className="text-sm text-slate-400 mt-1">
             Add your first application using the form above.
           </p>
@@ -89,7 +109,6 @@ export default function ApplicationsPage() {
           Could not save your application. Please try again.
         </p>
       )}
-
 
       <div className="grid gap-4">
         {data?.map((application) => (
