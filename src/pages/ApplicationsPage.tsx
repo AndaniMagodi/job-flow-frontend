@@ -110,7 +110,7 @@ export default function ApplicationsPage() {
         </p>
       )}
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 mt-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
         {data?.map((application) => (
           <ApplicationCard
             key={application.id}

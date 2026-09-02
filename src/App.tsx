@@ -6,6 +6,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AddApplicationPage from "./pages/AddApplicationPage";
+import DiscoverPage from "./pages/DiscoverPage";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: "applications", element: <ApplicationsPage /> },
+      { path: "discover", element: <DiscoverPage /> },
       { path: "applications/new", element: <AddApplicationPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
