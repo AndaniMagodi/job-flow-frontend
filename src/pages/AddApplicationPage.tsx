@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createApplication } from "../api/application";
+import { STATUS_ORDER } from "../lib/status";
 
 const applicationSchema = z.object({
   company: z.string().min(2, "Company is required"),
@@ -16,37 +17,15 @@ const applicationSchema = z.object({
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
 
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  background: "#222",
-  border: "1px solid #2a2a2a",
-  borderRadius: 10,
-  padding: "10px 12px",
-  fontSize: 13,
-  color: "#ddd",
-  outline: "none",
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: 11,
-  color: "#555",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  marginBottom: 6,
-};
-
-const errorStyle: React.CSSProperties = {
-  fontSize: 11,
-  color: "#f87171",
-  marginTop: 4,
-};
-
 export default function AddApplicationPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<ApplicationFormValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationSchema),
     defaultValues: {
       company: "",
@@ -67,91 +46,133 @@ export default function AddApplicationPage() {
   });
 
   return (
-    <section style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif" }}>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: "#fff", letterSpacing: "-0.5px", margin: 0 }}>
+    <section className="mx-auto max-w-2xl">
+      <header className="mb-6">
+        <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-[var(--foreground)]">
           Log an application
-        </h2>
-        <p style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
-          Add a job you've applied to or are about to apply for.
+        </h1>
+        <p className="mt-1 text-[14.5px] text-[var(--muted-foreground)]">
+          For a job you applied to outside the board.
         </p>
-      </div>
+      </header>
 
       <form
-        onSubmit={handleSubmit((v) => mutation.mutate(v))}
-        style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: 16, padding: 24, display: "flex", flexDirection: "column", gap: 16 }}
+        onSubmit={handleSubmit((values) => mutation.mutate(values))}
+        className="jf-card flex flex-col gap-4 p-6"
       >
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={labelStyle}>Company</label>
-            <input {...register("company")} style={inputStyle} placeholder="e.g. Anthropic" />
-            {errors.company && <p style={errorStyle}>{errors.company.message}</p>}
-          </div>
-          <div>
-            <label style={labelStyle}>Role</label>
-            <input {...register("role")} style={inputStyle} placeholder="e.g. Frontend Developer" />
-            {errors.role && <p style={errorStyle}>{errors.role.message}</p>}
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Company" error={errors.company?.message} htmlFor="company">
+            <input
+              id="company"
+              className="jf-input"
+              placeholder="e.g. Yoco"
+              {...register("company")}
+            />
+          </Field>
+
+          <Field label="Role" error={errors.role?.message} htmlFor="role">
+            <input
+              id="role"
+              className="jf-input"
+              placeholder="e.g. Frontend Developer"
+              {...register("role")}
+            />
+          </Field>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={labelStyle}>Status</label>
-            <select
-              {...register("status")}
-              style={{ ...inputStyle, cursor: "pointer" }}
-            >
-              <option value="Applied">Applied</option>
-              <option value="Interview">Interview</option>
-              <option value="Offer">Offer</option>
-              <option value="Rejected">Rejected</option>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Status" htmlFor="status">
+            <select id="status" className="jf-input cursor-pointer" {...register("status")}>
+              {STATUS_ORDER.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
             </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Date applied</label>
-            <input type="date" {...register("date_applied")} style={inputStyle} />
-            {errors.date_applied && <p style={errorStyle}>{errors.date_applied.message}</p>}
-          </div>
+          </Field>
+
+          <Field
+            label="Date applied"
+            error={errors.date_applied?.message}
+            htmlFor="date_applied"
+          >
+            <input
+              id="date_applied"
+              type="date"
+              className="jf-input"
+              {...register("date_applied")}
+            />
+          </Field>
         </div>
 
-        <div>
-          <label style={labelStyle}>Job link</label>
-          <input {...register("link")} style={inputStyle} placeholder="https://linkedin.com/jobs/..." />
-          {errors.link && <p style={errorStyle}>{errors.link.message}</p>}
-        </div>
-
-        <div>
-          <label style={labelStyle}>Notes</label>
-          <textarea
-            {...register("notes")}
-            style={{ ...inputStyle, minHeight: 100, resize: "vertical" }}
-            placeholder="Recruiter name, referral, anything worth remembering..."
+        <Field label="Job link" error={errors.link?.message} htmlFor="link">
+          <input
+            id="link"
+            className="jf-input"
+            placeholder="https://www.pnet.co.za/jobs/..."
+            {...register("link")}
           />
-        </div>
+        </Field>
+
+        <Field label="Notes" htmlFor="notes">
+          <textarea
+            id="notes"
+            className="jf-input min-h-24 resize-y font-[inherit] leading-relaxed"
+            placeholder="Recruiter name, referral, anything worth remembering…"
+            {...register("notes")}
+          />
+        </Field>
 
         {mutation.isError && (
-          <p style={{ fontSize: 12, color: "#f87171", background: "#2d1515", border: "1px solid #3d2020", borderRadius: 8, padding: "8px 12px" }}>
+          <p
+            role="alert"
+            className="rounded-lg bg-[var(--destructive-soft)] px-3.5 py-3 text-[13px] text-[var(--destructive)]"
+          >
             Could not save. Please try again.
           </p>
         )}
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <div className="flex items-center gap-2.5">
           <button
             type="submit"
             disabled={mutation.isPending}
-            style={{ background: "#6366f1", color: "#fff", fontSize: 13, fontWeight: 600, padding: "10px 20px", borderRadius: 20, border: "none", cursor: "pointer", opacity: mutation.isPending ? 0.6 : 1 }}
+            className="rounded-lg bg-[var(--primary)] px-5 py-2.5 text-[13.5px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {mutation.isPending ? "Saving..." : "Save application"}
+            {mutation.isPending ? "Saving…" : "Save application"}
           </button>
           <button
             type="button"
             onClick={() => navigate("/applications")}
-            style={{ background: "transparent", color: "#555", fontSize: 13, padding: "10px 16px", borderRadius: 20, border: "1px solid #2a2a2a", cursor: "pointer" }}
+            className="rounded-lg border border-[var(--input)] bg-white px-4 py-2.5 text-[13.5px] font-medium text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)]"
           >
             Cancel
           </button>
         </div>
       </form>
     </section>
+  );
+}
+
+function Field({
+  label,
+  htmlFor,
+  error,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="jf-label" htmlFor={htmlFor}>
+        {label}
+      </label>
+      {children}
+      {error && (
+        <p className="mt-1.5 text-[12.5px] text-[var(--destructive)]">{error}</p>
+      )}
+    </div>
   );
 }

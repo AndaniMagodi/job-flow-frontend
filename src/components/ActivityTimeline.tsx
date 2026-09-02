@@ -1,10 +1,10 @@
 import type { Activity } from "../api/activities";
 
 const EVENT_STYLES: Record<string, { color: string; label: string }> = {
-  created:        { color: "#6366f1", label: "Applied" },
-  status_changed: { color: "#f59e0b", label: "Status changed" },
-  note_added:     { color: "#444",    label: "Note added" },
-  follow_up_set:  { color: "#10b981", label: "Follow-up set" },
+  created: { color: "#4f46e5", label: "Applied" },
+  status_changed: { color: "#0284c7", label: "Status changed" },
+  note_added: { color: "#64748b", label: "Note added" },
+  follow_up_set: { color: "#047857", label: "Follow-up set" },
 };
 
 function timeAgo(iso: string) {
@@ -20,34 +20,51 @@ function timeAgo(iso: string) {
 
 export default function ActivityTimeline({ activities }: { activities: Activity[] }) {
   if (activities.length === 0) {
-    return <p style={{ fontSize: 12, color: "#555" }}>No activity yet.</p>;
+    return (
+      <p className="text-[13px] text-[var(--muted-foreground)]">No activity yet.</p>
+    );
   }
 
   return (
-    <div>
-      {activities.map((activity, i) => {
-        const style = EVENT_STYLES[activity.event] ?? { color: "#444", label: activity.event };
-        const isLast = i === activities.length - 1;
+    <ol className="list-none p-0">
+      {activities.map((activity, index) => {
+        const style = EVENT_STYLES[activity.event] ?? {
+          color: "#64748b",
+          label: activity.event,
+        };
+        const isLast = index === activities.length - 1;
+
         return (
-          <div key={activity.id} style={{ display: "flex", gap: 10 }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{ width: 7, height: 7, borderRadius: "50%", background: style.color, marginTop: 4, flexShrink: 0 }} />
-              {!isLast && <div style={{ width: 1, flex: 1, background: "#2a2a2a", margin: "4px 0" }} />}
+          <li key={activity.id} className="flex gap-3">
+            <div className="flex flex-col items-center">
+              <span
+                aria-hidden
+                className="mt-1.5 h-[7px] w-[7px] shrink-0 rounded-full"
+                style={{ background: style.color }}
+              />
+              {!isLast && <span className="my-1 w-px flex-1 bg-[var(--border)]" />}
             </div>
-            <div style={{ flex: 1, display: "flex", justifyContent: "space-between", paddingBottom: isLast ? 0 : 12 }}>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 500, color: "#ccc" }}>{style.label}</div>
+
+            <div
+              className={`flex flex-1 justify-between gap-3 ${isLast ? "" : "pb-3.5"}`}
+            >
+              <div className="min-w-0">
+                <div className="text-[13px] font-medium text-[var(--foreground)]">
+                  {style.label}
+                </div>
                 {activity.detail && (
-                  <div style={{ fontSize: 11, color: "#555", marginTop: 2 }}>{activity.detail}</div>
+                  <div className="mt-0.5 text-[12.5px] leading-relaxed text-[var(--muted-foreground)]">
+                    {activity.detail}
+                  </div>
                 )}
               </div>
-              <div style={{ fontSize: 11, color: "#444", whiteSpace: "nowrap", marginLeft: 12, marginTop: 2 }}>
+              <time className="mt-0.5 shrink-0 text-[12px] text-[var(--muted-foreground)]">
                 {timeAgo(activity.created_at)}
-              </div>
+              </time>
             </div>
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 }

@@ -1,109 +1,177 @@
 import { useState } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import {
+  Bell,
+  Bookmark,
+  Briefcase,
+  LayoutDashboard,
+  Menu,
+  Search,
+  Signal,
+  SignalLow,
+  X,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useDataSaver } from "../context/DataSaverContext";
 
 const navItems = [
-  { to: "/", label: "Dashboard" },
-  { to: "/discover", label: "Discover" },
-  { to: "/applications", label: "Applications" }
+  { to: "/jobs", label: "Find jobs", icon: Search },
+  { to: "/saved", label: "Saved", icon: Bookmark },
+  { to: "/alerts", label: "Alerts", icon: Bell },
+  { to: "/applications", label: "My applications", icon: Briefcase },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
 ];
 
 export default function Layout() {
-  const location = useLocation();
   const { logout } = useAuth();
+  const { dataSaver, setDataSaver } = useDataSaver();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  function handleSignOut() {
+    logout();
+    navigate("/login");
+  }
+
   return (
-    <div className="min-h-screen" style={{ background: "#111", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif" }}>
-      <header className="sticky top-0 z-10" style={{ background: "#111", borderBottom: "1px solid #1e1e1e", height: 56, display: "flex", alignItems: "center" }}>
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-5">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#6366f1" }} />
-              <span style={{ color: "#fff", fontSize: 15, fontWeight: 600, letterSpacing: "-0.3px" }}>
+    <div className="min-h-screen bg-[var(--surface)]">
+      <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-5">
+          <div className="flex items-center gap-8">
+            <Link to="/jobs" className="flex items-center gap-2.5 no-underline">
+              <span
+                aria-hidden
+                className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--primary)] text-[15px] font-bold text-white"
+              >
+                J
+              </span>
+              <span className="text-[17px] font-semibold tracking-[-0.02em] text-[var(--foreground)]">
                 JobFlow
               </span>
-            </div>
-            <nav className="hidden md:flex items-center gap-1">
-              {navItems.map((item) => {
-                const active = location.pathname === item.to;
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    style={{
-                      color: active ? "#fff" : "#555",
-                      background: active ? "#1e1e1e" : "transparent",
-                      fontSize: 13,
-                      padding: "6px 12px",
-                      borderRadius: 8,
-                      textDecoration: "none",
-                      transition: "color 0.15s",
-                    }}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
+              <span className="hidden rounded-full bg-[var(--primary-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--accent-foreground)] sm:inline">
+                South Africa
+              </span>
+            </Link>
+
+            <nav className="hidden items-center gap-1 md:flex">
+              {navItems.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    [
+                      "flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13.5px] font-medium no-underline transition-colors",
+                      isActive
+                        ? "bg-[var(--primary-soft)] text-[var(--accent-foreground)]"
+                        : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]",
+                    ].join(" ")
+                  }
+                >
+                  <Icon size={15} strokeWidth={2} />
+                  {label}
+                </NavLink>
+              ))}
             </nav>
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
             <button
-              onClick={() => navigate("/applications/new")}
-              style={{ background: "#6366f1", color: "#fff", fontSize: 12, fontWeight: 600, padding: "8px 16px", borderRadius: 20, border: "none", cursor: "pointer", letterSpacing: "0.2px" }}
+              onClick={() => setDataSaver(!dataSaver)}
+              title={
+                dataSaver
+                  ? "Data-light mode is on — fewer results, no webfont download"
+                  : "Turn on data-light mode to use less mobile data"
+              }
+              aria-pressed={dataSaver}
+              className={[
+                "flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-colors",
+                dataSaver
+                  ? "bg-[var(--success-soft)] text-[var(--success)]"
+                  : "text-[var(--muted-foreground)] hover:bg-[var(--muted)]",
+              ].join(" ")}
             >
-              + Log application
+              {dataSaver ? <SignalLow size={15} /> : <Signal size={15} />}
+              {dataSaver ? "Data-light" : "Data"}
             </button>
             <button
-              onClick={logout}
-              style={{ background: "transparent", color: "#555", fontSize: 12, padding: "8px 12px", border: "1px solid #2a2a2a", borderRadius: 8, cursor: "pointer" }}
+              onClick={() => navigate("/applications/new")}
+              className="rounded-lg border border-[var(--input)] bg-white px-3.5 py-2 text-[13px] font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--muted)]"
+            >
+              Log application
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="rounded-lg px-3 py-2 text-[13px] font-medium text-[var(--muted-foreground)] transition-colors hover:text-[var(--foreground)]"
             >
               Sign out
             </button>
           </div>
 
           <button
-            className="md:hidden"
-            onClick={() => setMenuOpen(!menuOpen)}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 8 }}
+            className="rounded-lg p-2 text-[var(--foreground)] md:hidden"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
           >
-            <div style={{ width: 20, height: 1, background: "#fff", marginBottom: 5 }} />
-            <div style={{ width: 20, height: 1, background: "#fff", marginBottom: 5 }} />
-            <div style={{ width: 20, height: 1, background: "#fff" }} />
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
+
+        {menuOpen && (
+          <nav className="border-t border-[var(--border)] bg-white px-3 py-2 md:hidden">
+            {navItems.map(({ to, label, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium no-underline",
+                    isActive
+                      ? "bg-[var(--primary-soft)] text-[var(--accent-foreground)]"
+                      : "text-[var(--muted-foreground)]",
+                  ].join(" ")
+                }
+              >
+                <Icon size={16} />
+                {label}
+              </NavLink>
+            ))}
+            <div className="my-2 h-px bg-[var(--border)]" />
+            <button
+              onClick={() => setDataSaver(!dataSaver)}
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[var(--foreground)]"
+            >
+              {dataSaver ? (
+                <SignalLow size={16} className="text-[var(--success)]" />
+              ) : (
+                <Signal size={16} className="text-[var(--muted-foreground)]" />
+              )}
+              Data-light mode
+              <span className="ml-auto text-[12px] text-[var(--muted-foreground)]">
+                {dataSaver ? "On" : "Off"}
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                navigate("/applications/new");
+                setMenuOpen(false);
+              }}
+              className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[var(--primary)]"
+            >
+              Log application
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[var(--muted-foreground)]"
+            >
+              Sign out
+            </button>
+          </nav>
+        )}
       </header>
 
-      {menuOpen && (
-        <div style={{ background: "#111", borderBottom: "1px solid #1e1e1e", padding: "12px 20px" }}>
-          {navItems.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={() => setMenuOpen(false)}
-              style={{ display: "block", color: "#888", fontSize: 13, padding: "8px 12px", textDecoration: "none" }}
-            >
-              {item.label}
-            </Link>
-          ))}
-          <button
-            onClick={() => { navigate("/applications/new"); setMenuOpen(false); }}
-            style={{ display: "block", width: "100%", textAlign: "left", color: "#6366f1", fontSize: 13, padding: "8px 12px", background: "none", border: "none", cursor: "pointer" }}
-          >
-            + Log application
-          </button>
-          <button
-            onClick={logout}
-            style={{ display: "block", width: "100%", textAlign: "left", color: "#555", fontSize: 13, padding: "8px 12px", background: "none", border: "none", cursor: "pointer" }}
-          >
-            Sign out
-          </button>
-        </div>
-      )}
-
-      <main className="mx-auto max-w-5xl px-5 py-7">
+      <main className="mx-auto w-full max-w-6xl px-5 py-8">
         <Outlet />
       </main>
     </div>

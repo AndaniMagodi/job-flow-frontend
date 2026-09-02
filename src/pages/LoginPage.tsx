@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const { login, register } = useAuth();
@@ -18,96 +17,112 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      mode === "login"
-        ? await login(email, password)
-        : await register(email, password);
-      navigate("/");
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+      if (mode === "login") await login(email, password);
+      else await register(email, password);
+      navigate("/jobs");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--surface)] px-4 py-10">
       <div className="w-full max-w-sm">
-
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
-          <span className="text-white font-semibold text-lg">JobFlow</span>
+        <div className="mb-7 flex items-center justify-center gap-2.5">
+          <span
+            aria-hidden
+            className="grid h-9 w-9 place-items-center rounded-lg bg-[var(--primary)] text-[16px] font-bold text-white"
+          >
+            J
+          </span>
+          <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--foreground)]">
+            JobFlow
+          </span>
         </div>
 
-        <Card className="border-[#1f1f1f] bg-[#141414] shadow-none">
-          <CardContent className="pt-6">
-            <div className="mb-6">
-              <h1 className="text-lg font-semibold text-white">
-                {mode === "login" ? "Welcome back" : "Create your account"}
-              </h1>
-              <p className="text-sm text-[#666] mt-1">
-                {mode === "login"
-                  ? "Sign in to your job tracker"
-                  : "Start tracking your job search"}
-              </p>
+        <div className="jf-card p-6">
+          <h1 className="text-[19px] font-semibold tracking-[-0.01em] text-[var(--foreground)]">
+            {mode === "login" ? "Welcome back" : "Create your account"}
+          </h1>
+          <p className="mt-1 text-[14px] text-[var(--muted-foreground)]">
+            {mode === "login"
+              ? "Sign in to find and track jobs across South Africa."
+              : "Find jobs across South Africa and keep every application in one place."}
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-3.5">
+            <div>
+              <label className="jf-label" htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                className="jf-input"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  className="w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2.5 text-sm text-white placeholder-[#555] outline-none focus:border-indigo-500 transition-colors"
-                />
-              </div>
-              <div>
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  className="w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2.5 text-sm text-white placeholder-[#555] outline-none focus:border-indigo-500 transition-colors"
-                />
-              </div>
+            <div>
+              <label className="jf-label" htmlFor="password">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                className="jf-input"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
 
-              {error && (
-                <p className="text-xs text-red-400 bg-red-950 border border-red-900 rounded-lg px-3 py-2">
-                  {error}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-sm font-medium text-white transition-colors"
+            {error && (
+              <p
+                role="alert"
+                className="rounded-lg bg-[var(--destructive-soft)] px-3.5 py-2.5 text-[13px] text-[var(--destructive)]"
               >
-                {loading
-                  ? "Please wait..."
-                  : mode === "login" ? "Sign in" : "Create account"}
-              </button>
-            </form>
+                {error}
+              </p>
+            )}
 
-            <p className="mt-5 text-center text-xs text-[#555]">
-              {mode === "login" ? "Don't have an account? " : "Already have one? "}
-              <button
-                onClick={() => {
-                  setMode(mode === "login" ? "register" : "login");
-                  setError("");
-                }}
-                className="text-indigo-400 hover:text-indigo-300 transition-colors"
-              >
-                {mode === "login" ? "Register" : "Sign in"}
-              </button>
-            </p>
-          </CardContent>
-        </Card>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-[var(--primary)] px-4 py-2.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {loading
+                ? "Please wait…"
+                : mode === "login"
+                  ? "Sign in"
+                  : "Create account"}
+            </button>
+          </form>
 
-        <p className="mt-6 text-center text-xs text-[#333]">
-          Track every application. Miss nothing.
+          <p className="mt-5 text-center text-[13px] text-[var(--muted-foreground)]">
+            {mode === "login" ? "Don't have an account? " : "Already have one? "}
+            <button
+              onClick={() => {
+                setMode(mode === "login" ? "register" : "login");
+                setError("");
+              }}
+              className="font-medium text-[var(--primary)] hover:underline"
+            >
+              {mode === "login" ? "Register" : "Sign in"}
+            </button>
+          </p>
+        </div>
+
+        <p className="mt-6 text-center text-[13px] text-[var(--muted-foreground)]">
+          Find the role. Track the application. Miss nothing.
         </p>
       </div>
     </div>

@@ -1,32 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { getActivities } from "../api/activities";
 import { getApplications, getDueApplications } from "../api/application";
 import { getAnalyticsSummary } from "../api/analytics";
 import ActivityTimeline from "../components/ActivityTimeline";
 import ActionCentre from "../components/ActionCenter";
+import { statusColor } from "../lib/status";
 
-
-
-function todayStr() {
+function today() {
   return new Date().toLocaleDateString("en-ZA", {
-    weekday: "long", day: "numeric", month: "long",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
   });
 }
-
-const card: React.CSSProperties = {
-  background: "#1a1a1a",
-  border: "1px solid #222",
-  borderRadius: 16,
-  padding: "16px",
-};
-
-const cardTitle: React.CSSProperties = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: "#fff",
-  marginBottom: 14,
-  letterSpacing: "-0.2px",
-};
 
 export default function DashboardPage() {
   const { data: activities } = useQuery({ queryKey: ["activities"], queryFn: getActivities });
@@ -35,155 +22,194 @@ export default function DashboardPage() {
   const { data: due } = useQuery({ queryKey: ["applications-due"], queryFn: getDueApplications });
 
   const total = applications?.length ?? 0;
-  const interviews = applications?.filter(a => a.status === "Interview").length ?? 0;
-  const offers = applications?.filter(a => a.status === "Offer").length ?? 0;
+  const interviews = applications?.filter((a) => a.status === "Interview").length ?? 0;
+  const offers = applications?.filter((a) => a.status === "Offer").length ?? 0;
   const responseRate = analytics?.response_rate ?? 0;
   const dueCount = due?.length ?? 0;
 
   const statusBreakdown = Object.entries(analytics?.status_breakdown ?? {});
-  const STATUS_COLORS: Record<string, string> = {
-    Applied: "#6366f1",
-    Interview: "#f59e0b",
-    Offer: "#10b981",
-    Rejected: "#ef4444",
-  };
-
   const sourceEntries = Object.entries(analytics?.source_breakdown ?? {})
     .sort((a, b) => b[1].total - a[1].total)
     .slice(0, 4);
 
   const stats = [
-    { label: "Applied", value: total, color: "#fff", trend: "all time" },
-    { label: "Interviews", value: interviews, color: "#f59e0b", trend: interviews > 0 ? "in progress" : "keep applying" },
-    { label: "Offers", value: offers, color: "#10b981", trend: offers > 0 ? "keep going 🎉" : "on the way" },
-    { label: "Response rate", value: `${responseRate}%`, color: "#818cf8", trend: responseRate > 20 ? "↑ above avg" : "building up" },
+    { label: "Applied", value: total, note: "all time" },
+    { label: "Interviews", value: interviews, note: interviews > 0 ? "in progress" : "keep applying" },
+    { label: "Offers", value: offers, note: offers > 0 ? "well done" : "on the way" },
+    { label: "Response rate", value: `${responseRate}%`, note: responseRate > 20 ? "above average" : "building up" },
   ];
 
   return (
-    <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif" }}>
-
-      {/* Hero */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 700, color: "#fff", letterSpacing: "-0.8px", lineHeight: 1.2 }}>
-          Your job search,<br />in one place.
+    <div>
+      <header className="mb-6">
+        <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-[var(--foreground)]">
+          Your job search
         </h1>
-        <p style={{ fontSize: 14, color: "#555", marginTop: 6 }}>
-          {todayStr()}
+        <p className="mt-1 text-[14.5px] text-[var(--muted-foreground)]">
+          {today()}
           {dueCount > 0 && (
-            <span style={{ color: "#f59e0b", fontWeight: 500 }}>
-              {" "}· {dueCount} follow-up{dueCount > 1 ? "s" : ""} need attention
-            </span>
+            <>
+              {" · "}
+              <span className="font-medium text-[var(--warning)]">
+                {dueCount} follow-up{dueCount > 1 ? "s" : ""} due
+              </span>
+            </>
           )}
         </p>
-        {total > 0 && (
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#1e1e1e", border: "1px solid #2a2a2a", borderRadius: 20, padding: "6px 14px", marginTop: 14 }}>
-            <span style={{ fontSize: 14 }}>🔥</span>
-            <span style={{ fontSize: 12, color: "#aaa" }}>Applying streak</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b" }}>{total} applications logged</span>
-          </div>
-        )}
-      </div>
+      </header>
 
-      {/* Stat cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 20 }}>
-        {stats.map((s) => (
-          <div key={s.label} style={{ background: "#1a1a1a", border: "1px solid #222", borderRadius: 16, padding: 16 }}>
-            <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-1.5px", lineHeight: 1, color: s.color }}>
-              {s.value}
+      {total === 0 && (
+        <div className="jf-card mb-5 flex flex-col items-start gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[15px] font-medium text-[var(--foreground)]">
+              Nothing tracked yet
+            </p>
+            <p className="mt-1 text-[13.5px] text-[var(--muted-foreground)]">
+              Apply to a job from the board and it lands here automatically.
+            </p>
+          </div>
+          <Link
+            to="/jobs"
+            className="shrink-0 rounded-lg bg-[var(--primary)] px-4 py-2.5 text-[13.5px] font-semibold text-white no-underline"
+          >
+            Find jobs
+          </Link>
+        </div>
+      )}
+
+      <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <div key={stat.label} className="jf-card p-4">
+            <div className="text-[30px] font-semibold leading-none tracking-[-0.03em] text-[var(--foreground)]">
+              {stat.value}
             </div>
-            <div style={{ fontSize: 11, color: "#555", marginTop: 6, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              {s.label}
+            <div className="mt-2 text-[12.5px] font-medium text-[var(--foreground)]">
+              {stat.label}
             </div>
-            <div style={{ fontSize: 11, color: s.trend.startsWith("↑") ? "#10b981" : "#555", marginTop: 4 }}>
-              {s.trend}
+            <div className="mt-0.5 text-[12px] text-[var(--muted-foreground)]">
+              {stat.note}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Insight banner */}
       {analytics?.best_source && (
-        <div style={{ background: "#13102b", border: "1px solid #2d2a5e", borderRadius: 16, padding: "14px 16px", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontSize: 10, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>
-              Top performing source this month
-            </div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#a5b4fc" }}>
-              {analytics.best_source} is getting you the most interviews — lean into it
-            </div>
-          </div>
-          <span style={{ fontSize: 22 }}>🏆</span>
+        <div className="mb-4 rounded-xl bg-[var(--primary-soft)] px-5 py-4">
+          <p className="text-[12px] font-medium uppercase tracking-wide text-[var(--primary)]">
+            Best performing source
+          </p>
+          <p className="mt-1 text-[14.5px] font-medium text-[var(--accent-foreground)]">
+            {analytics.best_source} is getting you the most interviews — lean into it.
+          </p>
         </div>
       )}
 
-      {/* Pipeline + Sources */}
       {total > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-          <div style={card}>
-            <div style={cardTitle}>
+        <div className="mb-4 grid gap-3 lg:grid-cols-2">
+          <section className="jf-card p-5">
+            <h2 className="mb-4 text-[14px] font-semibold text-[var(--foreground)]">
               Pipeline
-              <span style={{ fontSize: 11, fontWeight: 400, color: "#555", marginLeft: 6 }}>where things stand</span>
-            </div>
-            {statusBreakdown.map(([status, count]) => {
-              const pct = Math.round((count as number) / total * 100);
-              return (
-                <div key={status} style={{ marginBottom: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                    <span style={{ fontSize: 12, color: "#888" }}>{status}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "#ccc" }}>{count as number} · {pct}%</span>
-                  </div>
-                  <div style={{ height: 6, background: "#2a2a2a", borderRadius: 3, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${pct}%`, background: STATUS_COLORS[status] ?? "#555", borderRadius: 3 }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+              <span className="ml-2 text-[12.5px] font-normal text-[var(--muted-foreground)]">
+                where things stand
+              </span>
+            </h2>
 
-          <div style={card}>
-            <div style={cardTitle}>Where you're applying</div>
-            {sourceEntries.map(([source, stats]) => (
-              <div key={source} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid #222" }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: "#ccc" }}>{source}</div>
-                  <div style={{ fontSize: 11, color: "#555", marginTop: 2 }}>{stats.total} applications</div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: "#818cf8", letterSpacing: "-0.5px" }}>{stats.rate}%</div>
-                  <div style={{ fontSize: 10, color: "#555" }}>interview rate</div>
-                </div>
-              </div>
-            ))}
-            {sourceEntries.length === 0 && (
-              <p style={{ fontSize: 12, color: "#555" }}>No source data yet.</p>
+            <div className="space-y-3.5">
+              {statusBreakdown.map(([status, count]) => {
+                const pct = Math.round(((count as number) / total) * 100);
+                return (
+                  <div key={status}>
+                    <div className="mb-1.5 flex items-center justify-between">
+                      {/* The colour swatch never stands alone — the label beside
+                          it is what makes the CVD-adjacent pair readable. */}
+                      <span className="flex items-center gap-2 text-[13px] text-[var(--foreground)]">
+                        <span
+                          aria-hidden
+                          className="h-2 w-2 rounded-full"
+                          style={{ background: statusColor(status) }}
+                        />
+                        {status}
+                      </span>
+                      <span className="text-[13px] font-medium text-[var(--muted-foreground)]">
+                        {count as number} · {pct}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-[var(--muted)]">
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${pct}%`, background: statusColor(status) }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="jf-card p-5">
+            <h2 className="mb-3 text-[14px] font-semibold text-[var(--foreground)]">
+              Where you're applying
+            </h2>
+
+            {sourceEntries.length === 0 ? (
+              <p className="text-[13px] text-[var(--muted-foreground)]">
+                No source data yet.
+              </p>
+            ) : (
+              <ul className="divide-y divide-[var(--border)]">
+                {sourceEntries.map(([source, stats]) => (
+                  <li key={source} className="flex items-center justify-between py-2.5">
+                    <div>
+                      <div className="text-[13.5px] font-medium text-[var(--foreground)]">
+                        {source}
+                      </div>
+                      <div className="text-[12px] text-[var(--muted-foreground)]">
+                        {stats.total} application{stats.total === 1 ? "" : "s"}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[17px] font-semibold tracking-[-0.02em] text-[var(--foreground)]">
+                        {stats.rate}%
+                      </div>
+                      <div className="text-[11.5px] text-[var(--muted-foreground)]">
+                        interview rate
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
-          </div>
+          </section>
         </div>
       )}
 
-      {/* Action centre + Activity */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <div style={card}>
-          <div style={{ ...cardTitle, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span>Action centre</span>
+      <div className="grid gap-3 lg:grid-cols-2">
+        <section className="jf-card p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-[14px] font-semibold text-[var(--foreground)]">
+              Action centre
+            </h2>
             {dueCount > 0 && (
-              <span style={{ fontSize: 10, fontWeight: 600, color: "#f87171", background: "#2d1515", padding: "2px 8px", borderRadius: 20 }}>
+              <span className="rounded-full bg-[var(--warning-soft)] px-2.5 py-0.5 text-[11.5px] font-semibold text-[var(--warning)]">
                 {dueCount} due
               </span>
             )}
           </div>
           <ActionCentre compact />
-        </div>
+        </section>
 
-        <div style={card}>
-          <div style={cardTitle}>Recent activity</div>
-          {activities?.length === 0 && (
-            <p style={{ fontSize: 12, color: "#555" }}>No activity yet — log your first application.</p>
-          )}
-          {activities && activities.length > 0 && (
+        <section className="jf-card p-5">
+          <h2 className="mb-4 text-[14px] font-semibold text-[var(--foreground)]">
+            Recent activity
+          </h2>
+          {activities && activities.length > 0 ? (
             <ActivityTimeline activities={activities.slice(0, 5)} />
+          ) : (
+            <p className="text-[13px] text-[var(--muted-foreground)]">
+              No activity yet.
+            </p>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );
