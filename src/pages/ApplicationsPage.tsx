@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import ApplicationCard from "../components/ApplicationCard";
 import QuickAddApplication from "../components/QuickAddApplication";
 import {
@@ -6,7 +7,7 @@ import {
   getApplications,
   deleteApplication,
 } from "../api/application";
-import type { ApplicationStatus } from "../types/application";
+import type { ApplicationStatus, JobApplication } from "../types/application";
 
 function uniqueSuggestions(values: string[] = []): string[] {
   return Array.from(
@@ -37,10 +38,10 @@ export default function ApplicationsPage() {
   });
 
   function handleStatusChange(id: number, newStatus: ApplicationStatus) {
-    queryClient.setQueryData(["applications"], (old: any) =>
-      old?.map((app: any) =>
-        app.id === id ? { ...app, status: newStatus } : app
-      )
+    // The card already persisted the change; this just keeps the cached list
+    // in step without a refetch.
+    queryClient.setQueryData<JobApplication[]>(["applications"], (old) =>
+      old?.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
     );
   }
 
@@ -52,28 +53,15 @@ export default function ApplicationsPage() {
   );
 
   return (
-    <section
-      style={{
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif",
-      }}
-    >
-      <div style={{ marginBottom: 20 }}>
-        <h2
-          style={{
-            fontSize: 22,
-            fontWeight: 700,
-            color: "#fff",
-            letterSpacing: "-0.5px",
-            margin: 0,
-          }}
-        >
-          Applications
-        </h2>
-        <p style={{ fontSize: 13, color: "#555", marginTop: 4 }}>
+    <section>
+      <header className="mb-6">
+        <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-[var(--foreground)]">
+          My applications
+        </h1>
+        <p className="mt-1 text-[14.5px] text-[var(--muted-foreground)]">
           Every application you've logged, in one place.
         </p>
-      </div>
+      </header>
 
       <QuickAddApplication
         isSaving={createApplicationMutation.isPending}
@@ -87,30 +75,46 @@ export default function ApplicationsPage() {
         }}
       />
 
-      {isLoading && <p>Loading applications...</p>}
+      {isLoading && (
+        <p className="text-[14px] text-[var(--muted-foreground)]">
+          Loading applications…
+        </p>
+      )}
+
       {isError && (
-        <p className="text-sm text-red-600">
+        <p className="rounded-lg bg-[var(--destructive-soft)] px-3.5 py-3 text-[13.5px] text-[var(--destructive)]">
           Something went wrong while loading applications.
         </p>
       )}
 
-      {!isLoading && !isError && data?.length === 0 && (
-        <div className="rounded-xl border bg-white p-10 text-center shadow-sm">
-          <p className="text-lg font-semibold text-slate-700">
-            No applications yet
-          </p>
-          <p className="text-sm text-slate-400 mt-1">
-            Add your first application using the form above.
-          </p>
-        </div>
-      )}
       {createApplicationMutation.isError && (
-        <p className="text-sm text-red-600">
+        <p className="mb-3 rounded-lg bg-[var(--destructive-soft)] px-3.5 py-3 text-[13.5px] text-[var(--destructive)]">
           Could not save your application. Please try again.
         </p>
       )}
 
-      <div className="grid gap-4 mt-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+      {!isLoading && !isError && data?.length === 0 && (
+        <div className="jf-card grid place-items-center gap-3 py-16 text-center">
+          <div>
+            <p className="text-[15px] font-medium text-[var(--foreground)]">
+              No applications yet
+            </p>
+            <p className="mt-1 text-[13.5px] text-[var(--muted-foreground)]">
+              Apply from the job board, or add one with the form above.
+            </p>
+          </div>
+          <Link
+            to="/jobs"
+            className="rounded-lg bg-[var(--primary)] px-4 py-2.5 text-[13.5px] font-semibold text-white no-underline"
+          >
+            Find jobs
+          </Link>
+        </div>
+      )}
+
+      {/* Responsive card grid, kept from main — the list reads far better
+          than a single column once you have more than a handful. */}
+      <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
         {data?.map((application) => (
           <ApplicationCard
             key={application.id}

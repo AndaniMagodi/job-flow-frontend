@@ -1,16 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { getDueApplications } from "../api/application";
+import CompanyLogo from "./CompanyLogo";
 
-function getDueBadge(dateStr: string) {
+type Badge = { label: string; bg: string; color: string };
+
+function getDueBadge(dateStr: string): Badge {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const due = new Date(dateStr);
   due.setHours(0, 0, 0, 0);
-  const diff = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const days = Math.round((due.getTime() - today.getTime()) / 86_400_000);
 
-  if (diff < 0)   return { label: `${Math.abs(diff)}d overdue`, bg: "#2d1515", color: "#f87171" };
-  if (diff === 0) return { label: "Due today",                   bg: "#2d2010", color: "#fbbf24" };
-  return           { label: `Due in ${diff}d`,                   bg: "#0f1e3d", color: "#60a5fa" };
+  if (days < 0)
+    return {
+      label: `${Math.abs(days)}d overdue`,
+      bg: "var(--destructive-soft)",
+      color: "var(--destructive)",
+    };
+  if (days === 0)
+    return { label: "Due today", bg: "var(--warning-soft)", color: "var(--warning)" };
+  return { label: `Due in ${days}d`, bg: "var(--primary-soft)", color: "var(--primary)" };
 }
 
 export default function ActionCentre({ compact = false }: { compact?: boolean }) {
@@ -23,8 +32,8 @@ export default function ActionCentre({ compact = false }: { compact?: boolean })
 
   if (!due || due.length === 0) {
     return (
-      <p style={{ fontSize: 12, color: "#555" }}>
-        No follow-ups due. You're all caught up!
+      <p className="text-[13px] text-[var(--muted-foreground)]">
+        No follow-ups due — you're all caught up.
       </p>
     );
   }
@@ -32,29 +41,41 @@ export default function ActionCentre({ compact = false }: { compact?: boolean })
   const items = compact ? due.slice(0, 3) : due;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div className="flex flex-col gap-2">
       {items.map((app) => {
         const badge = getDueBadge(app.follow_up_date!);
-        const initials = app.company.slice(0, 2).toUpperCase();
+
         return (
-          <div key={app.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#222", borderRadius: 10, padding: "10px 12px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: "#1e1b4b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#818cf8", flexShrink: 0 }}>
-                {initials}
-              </div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 500, color: "#ddd" }}>{app.role}</div>
-                <div style={{ fontSize: 11, color: "#555", marginTop: 1 }}>{app.company}</div>
+          <div
+            key={app.id}
+            className="flex items-center justify-between gap-3 rounded-lg bg-[var(--muted)] px-3 py-2.5"
+          >
+            <div className="flex min-w-0 items-center gap-2.5">
+              <CompanyLogo company={app.company} size={32} />
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-medium text-[var(--foreground)]">
+                  {app.role}
+                </div>
+                <div className="truncate text-[12px] text-[var(--muted-foreground)]">
+                  {app.company}
+                </div>
               </div>
             </div>
-            <span style={{ fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 20, background: badge.bg, color: badge.color }}>
+
+            <span
+              className="shrink-0 rounded-full px-2.5 py-1 text-[11.5px] font-semibold"
+              style={{ background: badge.bg, color: badge.color }}
+            >
               {badge.label}
             </span>
           </div>
         );
       })}
+
       {compact && due.length > 3 && (
-        <p style={{ fontSize: 11, color: "#555", textAlign: "center" }}>+{due.length - 3} more</p>
+        <p className="text-center text-[12px] text-[var(--muted-foreground)]">
+          +{due.length - 3} more
+        </p>
       )}
     </div>
   );
