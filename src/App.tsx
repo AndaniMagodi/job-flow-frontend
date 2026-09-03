@@ -10,12 +10,17 @@ import BrowseJobsPage from "./pages/BrowseJobsPage";
 import JobDetailPage from "./pages/JobDetailPage";
 import SavedJobsPage from "./pages/SavedJobsPage";
 import AlertsPage from "./pages/AlertsPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const router = createBrowserRouter([
-  {
-    path: "/login",
-    element: <LoginPage />,
-  },
+  { path: "/login", element: <LoginPage /> },
+  // Reachable without a session: someone resetting a password cannot sign in,
+  // and a verification link may be opened on a different device.
+  { path: "/verify-email", element: <VerifyEmailPage /> },
+  { path: "/forgot-password", element: <ForgotPasswordPage /> },
+  { path: "/reset-password", element: <ResetPasswordPage /> },
   {
     path: "/",
     element: (

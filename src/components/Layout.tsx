@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useDataSaver } from "../context/DataSaverContext";
+import VerifyBanner from "./VerifyBanner";
 
 const navItems = [
   { to: "/jobs", label: "Find jobs", icon: Search },
@@ -170,6 +171,8 @@ export default function Layout() {
           </nav>
         )}
       </header>
+
+      <VerifyBanner />
 
       <main className="mx-auto w-full max-w-6xl px-5 py-8">
         <Outlet />
