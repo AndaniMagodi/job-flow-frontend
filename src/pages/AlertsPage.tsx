@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, BellOff, Loader2, MessageCircle, Trash2 } from "lucide-react";
+import { Bell, BellOff, Loader2, Mail, MessageCircle, Trash2 } from "lucide-react";
 import {
   createAlert,
   deleteAlert,
@@ -10,6 +10,7 @@ import {
   updateAlert,
 } from "../api/alerts";
 import { getJobFacets } from "../api/jobs";
+import { getCurrentUser } from "../api/auth";
 import type { JobFilters } from "../types/job";
 
 export default function AlertsPage() {
@@ -19,6 +20,7 @@ export default function AlertsPage() {
   const alertsQuery = useQuery({ queryKey: ["alerts"], queryFn: getAlerts });
   const channelsQuery = useQuery({ queryKey: ["alert-channels"], queryFn: getAlertChannels });
   const { data: facets } = useQuery({ queryKey: ["job-facets"], queryFn: getJobFacets });
+  const { data: user } = useQuery({ queryKey: ["current-user"], queryFn: getCurrentUser });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["alerts"] });
 
@@ -48,21 +50,31 @@ export default function AlertsPage() {
           Job alerts
         </h1>
         <p className="mt-1 text-[14.5px] text-[var(--muted-foreground)]">
-          Get a WhatsApp when a job matching your search is posted. Good roles
+          Get a message when a job matching your search is posted. Good roles
           go fast — this way you don't have to keep checking.
         </p>
       </header>
 
-      {channelsQuery.data && !whatsappLive && (
+      {user && !user.is_verified && (
         <p className="mb-5 rounded-lg bg-[var(--warning-soft)] px-4 py-3 text-[13px] leading-relaxed text-[var(--warning)]">
-          <strong className="font-semibold">WhatsApp isn't connected yet.</strong>{" "}
-          Alerts are saved and matched, but messages are only written to the
-          server log until a WhatsApp Business account is configured.
+          <strong className="font-semibold">Confirm your email first.</strong>{" "}
+          We sent a link to {user.email}. Alerts send messages on your behalf,
+          so we need to know the address is yours.
+        </p>
+      )}
+
+      {channelsQuery.data && !whatsappLive && (
+        <p className="mb-5 rounded-lg bg-[var(--muted)] px-4 py-3 text-[13px] leading-relaxed text-[var(--muted-foreground)]">
+          WhatsApp alerts are awaiting approval from Meta. Email alerts work
+          now, and anything you set up will switch to WhatsApp once it's live.
         </p>
       )}
 
       <NewAlertForm
         facets={facets}
+        whatsappLive={whatsappLive}
+        userEmail={user?.email}
+        disabled={!!user && !user.is_verified}
         onSubmit={(input) => create.mutate(input)}
         isSaving={create.isPending}
         error={create.error as Error | null}
@@ -95,8 +107,17 @@ export default function AlertsPage() {
                   {alert.name}
                 </h2>
                 <p className="mt-1 flex items-center gap-1.5 text-[13px] text-[var(--muted-foreground)]">
-                  <MessageCircle size={13} />
-                  {formatNumber(alert.destination)}
+                  {alert.channel === "email" ? (
+                    <>
+                      <Mail size={13} />
+                      {alert.destination}
+                    </>
+                  ) : (
+                    <>
+                      <MessageCircle size={13} />
+                      {formatNumber(alert.destination)}
+                    </>
+                  )}
                 </p>
                 <FilterSummary filters={alert.filters} />
               </div>
@@ -160,22 +181,37 @@ export default function AlertsPage() {
 
 function NewAlertForm({
   facets,
+  whatsappLive,
+  userEmail,
+  disabled,
   onSubmit,
   isSaving,
   error,
 }: {
   facets?: { provinces: string[]; categories: string[]; opportunity_types: string[] };
-  onSubmit: (input: { name: string; filters: JobFilters; destination: string }) => void;
+  whatsappLive: boolean;
+  userEmail?: string;
+  disabled: boolean;
+  onSubmit: (input: {
+    name: string;
+    filters: JobFilters;
+    destination: string;
+    channel: string;
+  }) => void;
   isSaving: boolean;
   error: Error | null;
 }) {
   const [name, setName] = useState("");
+  const [channel, setChannel] = useState<"email" | "whatsapp">("email");
   const [destination, setDestination] = useState("");
   const [province, setProvince] = useState("");
   const [category, setCategory] = useState("");
   const [opportunityType, setOpportunityType] = useState("");
 
-  const canSubmit = name.trim().length >= 2 && destination.trim().length > 0;
+  const canSubmit =
+    !disabled &&
+    name.trim().length >= 2 &&
+    (channel === "email" || destination.trim().length > 0);
 
   return (
     <form
@@ -185,7 +221,10 @@ function NewAlertForm({
         if (!canSubmit) return;
         onSubmit({
           name: name.trim(),
-          destination: destination.trim(),
+          channel,
+          // Email alerts always go to the verified account address; the server
+          // ignores anything sent here for that channel.
+          destination: channel === "email" ? "" : destination.trim(),
           filters: {
             province: province || undefined,
             category: category || undefined,
@@ -214,17 +253,31 @@ function NewAlertForm({
         </div>
 
         <div>
-          <label className="jf-label" htmlFor="alert-number">
-            WhatsApp number
+          <label className="jf-label" htmlFor="alert-channel">
+            Send to
           </label>
-          <input
-            id="alert-number"
+          <select
+            id="alert-channel"
             className="jf-input"
-            placeholder="082 123 4567"
-            inputMode="tel"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-          />
+            value={channel}
+            onChange={(e) => setChannel(e.target.value as "email" | "whatsapp")}
+          >
+            <option value="email">Email{userEmail ? ` — ${userEmail}` : ""}</option>
+            <option value="whatsapp">
+              WhatsApp{whatsappLive ? "" : " (awaiting approval)"}
+            </option>
+          </select>
+
+          {channel === "whatsapp" && (
+            <input
+              className="jf-input mt-2"
+              placeholder="082 123 4567"
+              inputMode="tel"
+              aria-label="WhatsApp number"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+            />
+          )}
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
@@ -70,9 +70,19 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="jf-label" htmlFor="password">
-                Password
-              </label>
+              <div className="flex items-baseline justify-between">
+                <label className="jf-label" htmlFor="password">
+                  Password
+                </label>
+                {mode === "login" && (
+                  <Link
+                    to="/forgot-password"
+                    className="mb-1.5 text-[12.5px] font-medium text-[var(--primary)] no-underline hover:underline"
+                  >
+                    Forgot?
+                  </Link>
+                )}
+              </div>
               <input
                 id="password"
                 type="password"
