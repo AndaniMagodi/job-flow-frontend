@@ -1,28 +1,21 @@
 # JobFlow — Frontend
 
-> Track every job application. Miss nothing.
+> Find opportunities in South Africa and track every application.
 
-JobFlow is a full-stack job application tracker built for developers actively job hunting. It gives you a clean dashboard to monitor your pipeline, track statuses, get reminded about follow-ups, and see your response rate at a glance.
+JobFlow is a South African job board with a built-in application tracker. Browse and filter opportunities, save listings, review AI-assisted CV matches, and track applications and follow-ups from one dashboard.
 
-**Live Demo:** [jobflow.vercel.app](https://jobflow.vercel.app) <!-- replace with your URL -->  
+**Live Demo:** [JobFlow](https://job-flow-frontend.vercel.app)  
 **Backend Repo:** [job-flow-backend](https://github.com/AndaniMagodi/job-flow-backend)
 
 ---
 
-## Screenshots
-
-### Dashboard
-![Dashboard](./screenshots/dashboard.png)
-
-### Applications
-![Applications](./screenshots/applications.png)
-
-### Login
-![Login](./screenshots/login.png)
-
----
-
 ## Features
+
+- **Job discovery** — Browse and filter South African listings, inspect job details, and save opportunities
+- **AI assistance** — Natural-language job search and CV-to-job matching when the backend AI provider is configured
+- **Job alerts** — Manage saved-search alerts; delivery depends on backend channel configuration
+- **Salary context** — View estimated salary information where available
+- **Data saver** — A lighter browsing mode for constrained connections
 
 - **Auth** — Register and sign in with JWT-based authentication
 - **Dashboard** — Summary cards showing total applications, interviews, offers, and response rate
