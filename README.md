@@ -4,7 +4,8 @@
 
 JobFlow is a full-stack job application tracker built for developers actively job hunting. It gives you a clean dashboard to monitor your pipeline, track statuses, get reminded about follow-ups, and see your response rate at a glance.
 
-**Live Demo:** [jobflow.vercel.app](https://jobflow.vercel.app) <!-- replace with your URL -->  
+**Live Demo:** [JobFlow](https://job-flow-frontend.vercel.app)
+**Backend API:** [JobFlow API](https://job-flow-backend-wb6l.onrender.com/docs)
 **Backend Repo:** [job-flow-backend](https://github.com/AndaniMagodi/job-flow-backend)
 
 ---
@@ -101,7 +102,9 @@ src/
 
 ## Deployment
 
-Deployed on **Vercel**. Connect your GitHub repo and set the `VITE_API_URL` environment variable to your backend URL.
+Deployed on **Vercel**. The repository's `vercel.json` sets the `VITE_API_URL`
+build variable and SPA rewrite, so new Vercel deployments use the Render API
+without requiring dashboard-only configuration.
 
 ---
 
