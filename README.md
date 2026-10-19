@@ -4,7 +4,8 @@
 
 JobFlow is a South African job board with a built-in application tracker. Browse and filter opportunities, save listings, review AI-assisted CV matches, and track applications and follow-ups from one dashboard.
 
-**Live Demo:** [JobFlow](https://job-flow-frontend.vercel.app)  
+**Live Demo:** [JobFlow](https://job-flow-frontend.vercel.app)
+**Backend API:** [JobFlow API](https://job-flow-backend-wb6l.onrender.com/docs)
 **Backend Repo:** [job-flow-backend](https://github.com/AndaniMagodi/job-flow-backend)
 
 ---
@@ -94,7 +95,9 @@ src/
 
 ## Deployment
 
-Deployed on **Vercel**. Connect your GitHub repo and set the `VITE_API_URL` environment variable to your backend URL.
+Deployed on **Vercel**. The repository's `vercel.json` sets the `VITE_API_URL`
+build variable and SPA rewrite, so new Vercel deployments use the Render API
+without requiring dashboard-only configuration.
 
 ---
 
