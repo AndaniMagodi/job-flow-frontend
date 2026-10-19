@@ -62,7 +62,7 @@ npm install
 Create a `.env` file in the root:
 
 ```env
-VITE_API_URL=http://localhost:8000
+VITE_BACKEND_URL=http://localhost:8000
 ```
 
 ### Run Locally
@@ -95,7 +95,7 @@ src/
 
 ## Deployment
 
-Deployed on **Vercel**. The repository's `vercel.json` sets the `VITE_API_URL`
+Deployed on **Vercel**. The repository's `vercel.json` sets the `VITE_BACKEND_URL`
 build variable and SPA rewrite, so new Vercel deployments use the Render API
 without requiring dashboard-only configuration.
 

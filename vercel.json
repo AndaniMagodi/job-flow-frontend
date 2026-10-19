@@ -5,7 +5,7 @@
   "outputDirectory": "dist",
   "build": {
     "env": {
-      "VITE_API_URL": "https://job-flow-backend-wb6l.onrender.com"
+      "VITE_BACKEND_URL": "https://job-flow-backend-wb6l.onrender.com"
     }
   },
   "rewrites": [
